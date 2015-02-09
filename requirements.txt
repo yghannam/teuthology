@@ -11,7 +11,7 @@ configobj
 # Require a new-ish six - only for configobj
 six >= 1.5.0
 httplib2
-paramiko < 1.8
+paramiko
 pexpect
 requests >= 2.3.0
 raven
