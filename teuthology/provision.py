@@ -12,28 +12,43 @@ from .lockstatus import get_status
 log = logging.getLogger(__name__)
 
 
-def _get_downburst_exec():
-    """
-    First check for downburst in the user's path.
-    Then check in ~/src, ~ubuntu/src, and ~teuthology/src.
-    Return '' if no executable downburst is found.
-    """
-    if config.downburst:
-        return config.downburst
-    path = os.environ.get('PATH', None)
-    if path:
-        for p in os.environ.get('PATH', '').split(os.pathsep):
-            pth = os.path.join(p, 'downburst')
+class Downburst(object):
+    def __init__(self):
+        pass
+
+    @property
+    def executable(self):
+        """
+        First check for downburst in the user's path.
+        Then check in ~/src, ~ubuntu/src, and ~teuthology/src.
+        Return '' if no executable downburst is found.
+        """
+        if config.downburst:
+            return config.downburst
+        path = os.environ.get('PATH', None)
+        if path:
+            for p in os.environ.get('PATH', '').split(os.pathsep):
+                pth = os.path.join(p, 'downburst')
+                if os.access(pth, os.X_OK):
+                    return pth
+        import pwd
+        little_old_me = pwd.getpwuid(os.getuid()).pw_name
+        for user in [little_old_me, 'ubuntu', 'teuthology']:
+            pth = os.path.expanduser(
+                "~%s/src/downburst/virtualenv/bin/downburst" % user)
             if os.access(pth, os.X_OK):
                 return pth
-    import pwd
-    little_old_me = pwd.getpwuid(os.getuid()).pw_name
-    for user in [little_old_me, 'ubuntu', 'teuthology']:
-        pth = os.path.expanduser("~%s/src/downburst/virtualenv/bin/downburst"
-                                 % user)
-        if os.access(pth, os.X_OK):
-            return pth
-    return ''
+        return ''
+
+    @property
+    def is_up(self):
+        pass
+
+    def create(self):
+        pass
+
+    def destroy(self):
+        pass
 
 
 def create_if_vm(ctx, machine_name):
