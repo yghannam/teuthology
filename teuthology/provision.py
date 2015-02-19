@@ -52,7 +52,7 @@ class Downburst(object):
     def create(self):
         self.build_config()
         success = None
-        with safe_while() as proceed:
+        with safe_while(sleep=60, tries=3) as proceed:
             while proceed():
                 (returncode, stdout, stderr) = self._run_create()
                 if returncode == 0:
