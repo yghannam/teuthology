@@ -21,6 +21,74 @@ class Downburst(object):
         self.status = status or get_status(self.name)
         self.config_path = None
 
+    def create(self):
+        self.build_config()
+        success = None
+        with safe_while(sleep=60, tries=3) as proceed:
+            while proceed():
+                (returncode, stdout, stderr) = self._run_create()
+                if returncode == 0:
+                    log.info("Downburst created %s: %s" % (self.name,
+                                                           stdout.strip()))
+                    success = True
+                    break
+                elif stderr:
+                    # If the guest already exists first destroy then re-create:
+                    if 'exists' in stderr:
+                        success = False
+                        log.info("Guest files exist. Re-creating guest: %s" %
+                                 (self.name))
+                        self.destroy()
+                    else:
+                        success = False
+                        log.info("Downburst failed on %s: %s" % (
+                            self.name, stderr.strip()))
+                        break
+            return success
+
+    def _run_create(self):
+        if not self.config_path:
+            raise ValueError("I need a config_path!")
+        executable = self.executable
+        if not executable:
+            log.error("No downburst executable found.")
+            return False
+        shortname = decanonicalize_hostname(self.name)
+        phys_host = decanonicalize_hostname(self.status['vm_host']['name'])
+
+        args = [executable, '-c', phys_host, 'create',
+                '--meta-data=%s' % self.config_path, shortname,
+                ]
+        log.info("Provisioning a {distro} {distroversion} vps".format(
+            distro=self.os_type,
+            distroversion=self.os_version
+        ))
+        proc = subprocess.Popen(args, stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        out, err = proc.communicate()
+        return (proc.returncode, out, err)
+
+    def build_config(self):
+        config_fd = tempfile.NamedTemporaryFile(delete=False)
+
+        file_info = {
+            'disk-size': '100G',
+            'ram': '1.9G',
+            'cpus': 1,
+            'networks': [
+                {'source': 'front', 'mac': self.status['mac_address']}],
+            'distro': self.os_type.lower(),
+            'distroversion': self.os_version,
+            'additional-disks': 3,
+            'additional-disks-size': '200G',
+            'arch': 'x86_64',
+        }
+        fqdn = self.name.split('@')[1]
+        file_out = {'downburst': file_info, 'local-hostname': fqdn}
+        yaml.safe_dump(file_out, config_fd)
+        self.config_path = config_fd.name
+        return True
+
     @property
     def executable(self):
         """
@@ -49,54 +117,8 @@ class Downburst(object):
     def is_up(self):
         pass
 
-    def create(self):
-        self.build_config()
-        success = None
-        with safe_while(sleep=60, tries=3) as proceed:
-            while proceed():
-                (returncode, stdout, stderr) = self._run_create()
-                if returncode == 0:
-                    log.info("Downburst created %s: %s" % (self.name,
-                                                           stdout.strip()))
-                    success = True
-                    break
-                elif stderr:
-                    # If the guest already exists first destroy then re-create:
-                    if 'exists' in stderr:
-                        success = False
-                        log.info("Guest files exist. Re-creating guest: %s" %
-                                 (self.name))
-                        self.destroy()
-                    else:
-                        success = False
-                        log.info("Downburst failed on %s: %s" % (
-                            self.name, stderr.strip()))
-                        break
-            return success
-
     def destroy(self):
         pass
-
-    def build_config(self):
-        config_fd = tempfile.NamedTemporaryFile(delete=False)
-
-        file_info = {
-            'disk-size': '100G',
-            'ram': '1.9G',
-            'cpus': 1,
-            'networks': [
-                {'source': 'front', 'mac': self.status['mac_address']}],
-            'distro': self.os_type.lower(),
-            'distroversion': self.os_version,
-            'additional-disks': 3,
-            'additional-disks-size': '200G',
-            'arch': 'x86_64',
-        }
-        fqdn = self.name.split('@')[1]
-        file_out = {'downburst': file_info, 'local-hostname': fqdn}
-        yaml.safe_dump(file_out, config_fd)
-        self.config_path = config_fd.name
-        return True
 
     def remove_config(self):
         if os.path.exists(self.config_path):
@@ -107,28 +129,6 @@ class Downburst(object):
 
     def __del__(self):
         self.remove_config()
-
-    def _run_create(self):
-        if not self.config_path:
-            raise ValueError("I need a config_path!")
-        executable = self.executable
-        if not executable:
-            log.error("No downburst executable found.")
-            return False
-        shortname = decanonicalize_hostname(self.name)
-        phys_host = decanonicalize_hostname(self.status['vm_host']['name'])
-
-        args = [executable, '-c', phys_host, 'create',
-                '--meta-data=%s' % self.config_path, shortname,
-                ]
-        log.info("Provisioning a {distro} {distroversion} vps".format(
-            distro=self.os_type,
-            distroversion=self.os_version
-        ))
-        proc = subprocess.Popen(args, stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        out, err = proc.communicate()
-        return (proc.returncode, out, err)
 
 
 def create_if_vm(ctx, machine_name):
