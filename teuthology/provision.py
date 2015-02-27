@@ -20,6 +20,7 @@ class Downburst(object):
         self.os_version = os_version
         self.status = status or get_status(self.name)
         self.config_path = None
+        self.host = decanonicalize_hostname(self.status['vm_host']['name'])
 
     def create(self):
         self.build_config()
@@ -54,9 +55,8 @@ class Downburst(object):
             log.error("No downburst executable found.")
             return False
         shortname = decanonicalize_hostname(self.name)
-        phys_host = decanonicalize_hostname(self.status['vm_host']['name'])
 
-        args = [executable, '-c', phys_host, 'create',
+        args = [executable, '-c', self.host, 'create',
                 '--meta-data=%s' % self.config_path, shortname,
                 ]
         log.info("Provisioning a {distro} {distroversion} vps".format(
@@ -118,7 +118,26 @@ class Downburst(object):
         pass
 
     def destroy(self):
-        pass
+        executable = self.executable
+        if not executable:
+            log.error("No downburst executable found.")
+            return False
+        shortname = decanonicalize_hostname(self.name)
+        args = [executable, '-c', self.host, 'destroy', shortname]
+        proc = subprocess.Popen(args, stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,)
+        out, err = proc.communicate()
+        if err:
+            log.error("Error destroying {machine}: {msg}".format(
+                machine=self.name, msg=err))
+            return False
+        elif proc.returncode == 0:
+            log.info("%s destroyed: %s" % (self.name, out))
+            return True
+        else:
+            log.error("I don't know if the destroy of {node} succeded!".format(
+                node=self.name))
+            return False
 
     def remove_config(self):
         if os.path.exists(self.config_path):
@@ -159,6 +178,8 @@ def destroy_if_vm(ctx, machine_name, user=None, description=None):
     Return False only on vm downburst failures.
     """
     status_info = get_status(machine_name)
+    os_type = get_distro(ctx)
+    os_version = get_distro_version(ctx)
     if not status_info or not status_info.get('is_vm', False):
         return True
     if user is not None and user != status_info['locked_by']:
@@ -169,20 +190,6 @@ def destroy_if_vm(ctx, machine_name, user=None, description=None):
         log.error("Tried to destroy {node} with description {desc_arg} but it is locked with description {desc_lock}".format(
             node=machine_name, desc_arg=description, desc_lock=status_info['description']))
         return False
-    phys_host = decanonicalize_hostname(status_info['vm_host']['name'])
-    destroyMe = decanonicalize_hostname(machine_name)
-    dbrst = _get_downburst_exec()
-    if not dbrst:
-        log.error("No downburst executable found.")
-        return False
-    p = subprocess.Popen([dbrst, '-c', phys_host,
-                          'destroy', destroyMe],
-                         stdout=subprocess.PIPE, stderr=subprocess.PIPE,)
-    owt, err = p.communicate()
-    if err:
-        log.error("Error destroying {machine}: {msg}".format(
-            machine=machine_name, msg=err))
-        return False
-    else:
-        log.info("%s destroyed: %s" % (machine_name, owt))
-    return True
+    dbrst = Downburst(machine_name=machine_name, os_type=os_type,
+                      os_version=os_version, status=status_info)
+    return dbrst.destroy()
