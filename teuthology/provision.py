@@ -166,7 +166,7 @@ def create_if_vm(ctx, machine_name):
             'Usage of a custom downburst config has been deprecated.'
         )
 
-    dbrst = Downburst(machine_name=machine_name, os_type=os_type,
+    dbrst = Downburst(name=machine_name, os_type=os_type,
                       os_version=os_version, status=status_info)
     return dbrst.create()
 
@@ -190,6 +190,6 @@ def destroy_if_vm(ctx, machine_name, user=None, description=None):
         log.error("Tried to destroy {node} with description {desc_arg} but it is locked with description {desc_lock}".format(
             node=machine_name, desc_arg=description, desc_lock=status_info['description']))
         return False
-    dbrst = Downburst(machine_name=machine_name, os_type=os_type,
+    dbrst = Downburst(name=machine_name, os_type=os_type,
                       os_version=os_version, status=status_info)
     return dbrst.destroy()
