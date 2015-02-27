@@ -68,26 +68,27 @@ class Downburst(object):
         out, err = proc.communicate()
         return (proc.returncode, out, err)
 
-    def build_config(self):
-        config_fd = tempfile.NamedTemporaryFile(delete=False)
-
-        file_info = {
-            'disk-size': '100G',
-            'ram': '1.9G',
-            'cpus': 1,
-            'networks': [
-                {'source': 'front', 'mac': self.status['mac_address']}],
-            'distro': self.os_type.lower(),
-            'distroversion': self.os_version,
-            'additional-disks': 3,
-            'additional-disks-size': '200G',
-            'arch': 'x86_64',
-        }
-        fqdn = self.name.split('@')[1]
-        file_out = {'downburst': file_info, 'local-hostname': fqdn}
-        yaml.safe_dump(file_out, config_fd)
-        self.config_path = config_fd.name
-        return True
+    def destroy(self):
+        executable = self.executable
+        if not executable:
+            log.error("No downburst executable found.")
+            return False
+        shortname = decanonicalize_hostname(self.name)
+        args = [executable, '-c', self.host, 'destroy', shortname]
+        proc = subprocess.Popen(args, stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,)
+        out, err = proc.communicate()
+        if err:
+            log.error("Error destroying {machine}: {msg}".format(
+                machine=self.name, msg=err))
+            return False
+        elif proc.returncode == 0:
+            log.info("%s destroyed: %s" % (self.name, out))
+            return True
+        else:
+            log.error("I don't know if the destroy of {node} succeded!".format(
+                node=self.name))
+            return False
 
     @property
     def executable(self):
@@ -113,31 +114,26 @@ class Downburst(object):
                 return pth
         return ''
 
-    @property
-    def is_up(self):
-        pass
+    def build_config(self):
+        config_fd = tempfile.NamedTemporaryFile(delete=False)
 
-    def destroy(self):
-        executable = self.executable
-        if not executable:
-            log.error("No downburst executable found.")
-            return False
-        shortname = decanonicalize_hostname(self.name)
-        args = [executable, '-c', self.host, 'destroy', shortname]
-        proc = subprocess.Popen(args, stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE,)
-        out, err = proc.communicate()
-        if err:
-            log.error("Error destroying {machine}: {msg}".format(
-                machine=self.name, msg=err))
-            return False
-        elif proc.returncode == 0:
-            log.info("%s destroyed: %s" % (self.name, out))
-            return True
-        else:
-            log.error("I don't know if the destroy of {node} succeded!".format(
-                node=self.name))
-            return False
+        file_info = {
+            'disk-size': '100G',
+            'ram': '1.9G',
+            'cpus': 1,
+            'networks': [
+                {'source': 'front', 'mac': self.status['mac_address']}],
+            'distro': self.os_type.lower(),
+            'distroversion': self.os_version,
+            'additional-disks': 3,
+            'additional-disks-size': '200G',
+            'arch': 'x86_64',
+        }
+        fqdn = self.name.split('@')[1]
+        file_out = {'downburst': file_info, 'local-hostname': fqdn}
+        yaml.safe_dump(file_out, config_fd)
+        self.config_path = config_fd.name
+        return True
 
     def remove_config(self):
         if os.path.exists(self.config_path):
@@ -145,6 +141,10 @@ class Downburst(object):
             self.config_path = None
             return True
         return False
+
+    @property
+    def is_up(self):
+        pass
 
     def __del__(self):
         self.remove_config()
