@@ -13,6 +13,30 @@ from .lockstatus import get_status
 log = logging.getLogger(__name__)
 
 
+def downburst_executable():
+    """
+    First check for downburst in the user's path.
+    Then check in ~/src, ~ubuntu/src, and ~teuthology/src.
+    Return '' if no executable downburst is found.
+    """
+    if config.downburst:
+        return config.downburst
+    path = os.environ.get('PATH', None)
+    if path:
+        for p in os.environ.get('PATH', '').split(os.pathsep):
+            pth = os.path.join(p, 'downburst')
+            if os.access(pth, os.X_OK):
+                return pth
+    import pwd
+    little_old_me = pwd.getpwuid(os.getuid()).pw_name
+    for user in [little_old_me, 'ubuntu', 'teuthology']:
+        pth = os.path.expanduser(
+            "~%s/src/downburst/virtualenv/bin/downburst" % user)
+        if os.access(pth, os.X_OK):
+            return pth
+    return ''
+
+
 class Downburst(object):
     def __init__(self, name, os_type, os_version, status=None):
         self.name = name
@@ -21,6 +45,7 @@ class Downburst(object):
         self.status = status or get_status(self.name)
         self.config_path = None
         self.host = decanonicalize_hostname(self.status['vm_host']['name'])
+        self.executable = downburst_executable()
 
     def create(self):
         self.build_config()
@@ -90,30 +115,6 @@ class Downburst(object):
             log.error("I don't know if the destroy of {node} succeded!".format(
                 node=self.name))
             return False
-
-    @property
-    def executable(self):
-        """
-        First check for downburst in the user's path.
-        Then check in ~/src, ~ubuntu/src, and ~teuthology/src.
-        Return '' if no executable downburst is found.
-        """
-        if config.downburst:
-            return config.downburst
-        path = os.environ.get('PATH', None)
-        if path:
-            for p in os.environ.get('PATH', '').split(os.pathsep):
-                pth = os.path.join(p, 'downburst')
-                if os.access(pth, os.X_OK):
-                    return pth
-        import pwd
-        little_old_me = pwd.getpwuid(os.getuid()).pw_name
-        for user in [little_old_me, 'ubuntu', 'teuthology']:
-            pth = os.path.expanduser(
-                "~%s/src/downburst/virtualenv/bin/downburst" % user)
-            if os.access(pth, os.X_OK):
-                return pth
-        return ''
 
     def build_config(self):
         config_fd = tempfile.NamedTemporaryFile(delete=False)
