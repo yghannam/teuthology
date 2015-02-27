@@ -84,7 +84,7 @@ class Downburst(object):
             return False
         elif proc.returncode == 0:
             out_str = ': %s' % out if out else ''
-            log.info("%s destroyed%s" % (self.name, out_str))
+            log.info("Destroyed %s%s" % (self.name, out_str))
             return True
         else:
             log.error("I don't know if the destroy of {node} succeded!".format(
