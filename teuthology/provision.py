@@ -136,7 +136,7 @@ class Downburst(object):
         return True
 
     def remove_config(self):
-        if os.path.exists(self.config_path):
+        if self.config_path and os.path.exists(self.config_path):
             os.remove(self.config_path)
             self.config_path = None
             return True
