@@ -59,6 +59,9 @@ Scheduler arguments:
                               [default: 1]
   -l <jobs>, --limit <jobs>   Queue at most this many jobs
                               [default: 0]
+  --subset <index/outof>      split suite into outof pieces and schedule index
+                              piece
+  --simple-suite-generation   use non-subset suite generation (for testing)
   -p <priority>, --priority <priority>
                               Job priority (lower is sooner)
                               [default: 1000]
