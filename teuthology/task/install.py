@@ -577,9 +577,9 @@ def install_packages(ctx, pkgs, config):
                 install_pkgs[system_type],
                 ctx, remote, pkgs[system_type], config)
 
-    for remote in ctx.cluster.remotes.iterkeys():
+    #for remote in ctx.cluster.remotes.iterkeys():
         # verifies that the install worked as expected
-        verify_package_version(ctx, config, remote)
+        #verify_package_version(ctx, config, remote)
 
 
 def _remove_deb(ctx, config, remote, debs):
@@ -1088,7 +1088,7 @@ def upgrade_common(ctx, config, deploy_style):
         node['project'] = project
 
         deploy_style(ctx, node, remote, pkgs, system_type)
-        verify_package_version(ctx, node, remote)
+        #verify_package_version(ctx, node, remote)
 
 
 docstring_for_upgrade = """"
