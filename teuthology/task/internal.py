@@ -712,8 +712,8 @@ def vm_setup(ctx, config):
                     _, err = p2.communicate()
                     if err:
                         log.info("Edit of /etc/sudoers failed: %s", err)
-                    if need_chef:
-                        p.spawn(_download_and_run_chef, rem)
+                    #if need_chef:
+                    #    p.spawn(_download_and_run_chef, rem)
 
 def _download_and_run_chef(remote_):
     """
