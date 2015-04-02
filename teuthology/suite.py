@@ -428,7 +428,7 @@ def package_version_for_hash(hash, kernel_flavor='basic',
         return resp.text.strip()
 
 
-def get_branch_info(project, branch, project_owner='ceph'):
+def get_branch_info(project, branch, project_owner='yghannam'):
     """
     Use the GitHub API to query a project's branch. Returns:
         {u'object': {u'sha': <a_sha_string>,
