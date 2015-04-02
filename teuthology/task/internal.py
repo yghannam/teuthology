@@ -686,8 +686,8 @@ def vm_setup(ctx, config):
     """
     all_tasks = [x.keys()[0] for x in ctx.config['tasks']]
     need_chef = False
-    if 'chef' in all_tasks or 'kernel' in all_tasks:
-        need_chef = True
+    #if 'chef' in all_tasks or 'kernel' in all_tasks:
+    #    need_chef = True
     with parallel() as p:
         editinfo = os.path.join(os.path.dirname(__file__),'edit_sudoers.sh')
         for rem in ctx.cluster.remotes.iterkeys():
