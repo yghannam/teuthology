@@ -78,7 +78,7 @@ def lock_machines(ctx, config):
     machine_type = config[1]
     how_many = config[0]
     # We want to make sure there are always this many machines available
-    to_reserve = 5
+    to_reserve = 0
 
     # change the status during the locking process
     report.try_push_job_info(ctx.config, dict(status='waiting'))
