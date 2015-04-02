@@ -686,8 +686,8 @@ def vm_setup(ctx, config):
     """
     all_tasks = [x.keys()[0] for x in ctx.config['tasks']]
     need_chef = False
-    if 'chef' in all_tasks or 'kernel' in all_tasks:
-        need_chef = True
+    #if 'chef' in all_tasks or 'kernel' in all_tasks:
+    #    need_chef = True
     with parallel() as p:
         editinfo = os.path.join(os.path.dirname(__file__),'edit_sudoers.sh')
         for rem in ctx.cluster.remotes.iterkeys():
@@ -712,8 +712,8 @@ def vm_setup(ctx, config):
                     _, err = p2.communicate()
                     if err:
                         log.info("Edit of /etc/sudoers failed: %s", err)
-                    if need_chef:
-                        p.spawn(_download_and_run_chef, rem)
+                    #if need_chef:
+                    #    p.spawn(_download_and_run_chef, rem)
 
 def _download_and_run_chef(remote_):
     """
