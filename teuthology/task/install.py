@@ -48,7 +48,7 @@ PACKAGES['ceph']['deb'] = [
     'rbd-fuse',
 ]
 PACKAGES['ceph']['rpm'] = [
-    'ceph-debuginfo',
+#    'ceph-debuginfo',
     'ceph-radosgw',
     'ceph-test',
     'ceph-devel',
