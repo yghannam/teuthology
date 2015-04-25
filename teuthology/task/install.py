@@ -52,7 +52,6 @@ PACKAGES['ceph']['rpm'] = [
 #    'ceph-radosgw',
 #    'ceph-test',
 #    'ceph-devel',
-    'ceph-common',
 #    'ceph',
 #    'ceph-fuse',
 #    'cephfs-java',
