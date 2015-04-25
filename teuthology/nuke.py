@@ -524,8 +524,8 @@ def nuke_helper(ctx, should_unlock):
         log.info("Terminating Hadoop services...")
         kill_hadoop(ctx)
 
-    if need_reboot:
-        reboot(ctx, need_reboot)
+    #if need_reboot:
+    #    reboot(ctx, need_reboot)
     log.info('All kernel mounts gone.')
 
     log.info('Synchronizing clocks...')
