@@ -49,20 +49,19 @@ PACKAGES['ceph']['deb'] = [
 ]
 PACKAGES['ceph']['rpm'] = [
 #    'ceph-debuginfo',
-#    'ceph-radosgw',
-#    'ceph-test',
-#    'ceph-devel',
-    'ceph-common',
-#    'ceph',
-#    'ceph-fuse',
-#    'cephfs-java',
-#    'rest-bench',
-#    'libcephfs_jni1',
-#    'libcephfs1',
-#    'librados2',
-#    'librbd1',
-#    'python-ceph',
-#    'rbd-fuse',
+    'ceph-radosgw',
+    'ceph-test',
+    'ceph-devel',
+    'ceph',
+    'ceph-fuse',
+    'cephfs-java',
+    'rest-bench',
+    'libcephfs_jni1',
+    'libcephfs1',
+    'librados2',
+    'librbd1',
+    'python-ceph',
+    'rbd-fuse',
 ]
 
 
