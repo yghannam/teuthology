@@ -62,6 +62,7 @@ PACKAGES['ceph']['rpm'] = [
     'librbd1',
     'python-ceph',
     'rbd-fuse',
+    'qemu',
 ]
 
 
