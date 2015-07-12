@@ -276,78 +276,78 @@ def _update_deb_package_list_and_install(ctx, remote, debs, config):
     :param config: the config dict
     """
 
-    # check for ceph release key
-    r = remote.run(
-        args=[
-            'sudo', 'apt-key', 'list', run.Raw('|'), 'grep', 'Ceph',
-        ],
-        stdout=StringIO(),
-        check_status=False,
-    )
-    if r.stdout.getvalue().find('Ceph automated package') == -1:
-        # if it doesn't exist, add it
-        remote.run(
-            args=[
-                'wget', '-q', '-O-',
-                'https://ceph.com/git/?p=ceph.git;a=blob_plain;f=keys/autobuild.asc',
-                run.Raw('|'),
-                'sudo', 'apt-key', 'add', '-',
-            ],
-            stdout=StringIO(),
-        )
-
-    baseparms = _get_baseurlinfo_and_dist(ctx, remote, config)
-    log.info("Installing packages: {pkglist} on remote deb {arch}".format(
-        pkglist=", ".join(debs), arch=baseparms['arch'])
-    )
-    # get baseurl
-    base_url = _get_baseurl(ctx, remote, config)
-    log.info('Pulling from %s', base_url)
-
-    # get package version string
-    # FIXME this is a terrible hack.
-    while True:
-        r = remote.run(
-            args=[
-                'wget', '-q', '-O-', base_url + '/version',
-            ],
-            stdout=StringIO(),
-            check_status=False,
-        )
-        if r.exitstatus != 0:
-            if config.get('wait_for_package'):
-                log.info('Package not there yet, waiting...')
-                time.sleep(15)
-                continue
-            raise VersionNotFoundError("%s/version" % base_url)
-        version = r.stdout.getvalue().strip()
-        log.info('Package version is %s', version)
-        break
-
-    remote.run(
-        args=[
-            'echo', 'deb', base_url, baseparms['dist'], 'main',
-            run.Raw('|'),
-            'sudo', 'tee', '/etc/apt/sources.list.d/{proj}.list'.format(
-                proj=config.get('project', 'ceph')),
-        ],
-        stdout=StringIO(),
-    )
-    remote.run(args=['sudo', 'apt-get', 'update'], check_status=False)
+#    # check for ceph release key
+#    r = remote.run(
+#        args=[
+#            'sudo', 'apt-key', 'list', run.Raw('|'), 'grep', 'Ceph',
+#        ],
+#        stdout=StringIO(),
+#        check_status=False,
+#    )
+#    if r.stdout.getvalue().find('Ceph automated package') == -1:
+#        # if it doesn't exist, add it
+#        remote.run(
+#            args=[
+#                'wget', '-q', '-O-',
+#                'https://ceph.com/git/?p=ceph.git;a=blob_plain;f=keys/autobuild.asc',
+#                run.Raw('|'),
+#                'sudo', 'apt-key', 'add', '-',
+#            ],
+#            stdout=StringIO(),
+#        )
+#
+#    baseparms = _get_baseurlinfo_and_dist(ctx, remote, config)
+#    log.info("Installing packages: {pkglist} on remote deb {arch}".format(
+#        pkglist=", ".join(debs), arch=baseparms['arch'])
+#    )
+#    # get baseurl
+#    base_url = _get_baseurl(ctx, remote, config)
+#    log.info('Pulling from %s', base_url)
+#
+#    # get package version string
+#    # FIXME this is a terrible hack.
+#    while True:
+#        r = remote.run(
+#            args=[
+#                'wget', '-q', '-O-', base_url + '/version',
+#            ],
+#            stdout=StringIO(),
+#            check_status=False,
+#        )
+#        if r.exitstatus != 0:
+#            if config.get('wait_for_package'):
+#                log.info('Package not there yet, waiting...')
+#                time.sleep(15)
+#                continue
+#            raise VersionNotFoundError("%s/version" % base_url)
+#        version = r.stdout.getvalue().strip()
+#        log.info('Package version is %s', version)
+#        break
+#
+#    remote.run(
+#        args=[
+#            'echo', 'deb', base_url, baseparms['dist'], 'main',
+#            run.Raw('|'),
+#            'sudo', 'tee', '/etc/apt/sources.list.d/{proj}.list'.format(
+#                proj=config.get('project', 'ceph')),
+#        ],
+#        stdout=StringIO(),
+#    )
+#    remote.run(args=['sudo', 'apt-get', 'update'], check_status=False)
     remote.run(
         args=[
             'sudo', 'DEBIAN_FRONTEND=noninteractive', 'apt-get', '-y', '--force-yes',
             '-o', run.Raw('Dpkg::Options::="--force-confdef"'), '-o', run.Raw(
                 'Dpkg::Options::="--force-confold"'),
             'install',
-        ] + ['%s=%s' % (d, version) for d in debs],
+        ] + ['%s' % (d) for d in debs],
     )
-    ldir = _get_local_dir(config, remote)
-    if ldir:
-        for fyle in os.listdir(ldir):
-            fname = "%s/%s" % (ldir, fyle)
-            remote.run(args=['sudo', 'dpkg', '-i', fname],)
-
+#    ldir = _get_local_dir(config, remote)
+#    if ldir:
+#        for fyle in os.listdir(ldir):
+#            fname = "%s/%s" % (ldir, fyle)
+#            remote.run(args=['sudo', 'dpkg', '-i', fname],)
+#
 
 def _yum_fix_repo_priority(remote, project, uri):
     """
