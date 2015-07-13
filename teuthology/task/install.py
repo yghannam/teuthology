@@ -25,26 +25,26 @@ PACKAGES = {}
 PACKAGES['ceph'] = {}
 PACKAGES['ceph']['deb'] = [
     'ceph',
-    'ceph-dbg',
+#    'ceph-dbg',
     'ceph-mds',
-    'ceph-mds-dbg',
+#    'ceph-mds-dbg',
     'ceph-common',
-    'ceph-common-dbg',
+#    'ceph-common-dbg',
     'ceph-fuse',
-    'ceph-fuse-dbg',
+#    'ceph-fuse-dbg',
     'ceph-test',
-    'ceph-test-dbg',
+#    'ceph-test-dbg',
     'radosgw',
-    'radosgw-dbg',
+#    'radosgw-dbg',
     'python-ceph',
     'libcephfs1',
-    'libcephfs1-dbg',
+#    'libcephfs1-dbg',
     'libcephfs-java',
     'libcephfs-jni',
     'librados2',
-    'librados2-dbg',
+#    'librados2-dbg',
     'librbd1',
-    'librbd1-dbg',
+#    'librbd1-dbg',
     'rbd-fuse',
 ]
 PACKAGES['ceph']['rpm'] = [
@@ -796,8 +796,10 @@ def install(ctx, config):
     # install these. 'extras' might not be the best name for this.
     extras = config.get('extras')
     if extras is not None:
-        debs = ['ceph-test', 'ceph-test-dbg', 'ceph-fuse', 'ceph-fuse-dbg',
-                'librados2', 'librados2-dbg', 'librbd1', 'librbd1-dbg',
+#        debs = ['ceph-test', 'ceph-test-dbg', 'ceph-fuse', 'ceph-fuse-dbg',
+#                'librados2', 'librados2-dbg', 'librbd1', 'librbd1-dbg',
+        debs = ['ceph-test', 'ceph-fuse',
+                'librados2', 'librbd1',
                 'python-ceph']
         rpm = ['ceph-fuse', 'librbd1', 'librados2', 'ceph-test', 'python-ceph']
 
@@ -809,9 +811,9 @@ def install(ctx, config):
     # they were included in PACKAGES to ensure that nuke cleans them up.
     proj_install_debs = {'ceph': [
         'librados2',
-        'librados2-dbg',
+#        'librados2-dbg',
         'librbd1',
-        'librbd1-dbg',
+#        'librbd1-dbg',
     ]}
 
     proj_install_rpm = {'ceph': [
