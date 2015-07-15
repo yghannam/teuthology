@@ -334,7 +334,7 @@ def _update_deb_package_list_and_install(ctx, remote, debs, config):
 #        ],
 #        stdout=StringIO(),
 #    )
-#    remote.run(args=['sudo', 'apt-get', 'update'], check_status=False)
+    remote.run(args=['sudo', 'apt-get', 'update'], check_status=False)
     remote.run(
         args=[
             'sudo', 'DEBIAN_FRONTEND=noninteractive', 'apt-get', '-y', '--force-yes',
