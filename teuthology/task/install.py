@@ -46,6 +46,7 @@ PACKAGES['ceph']['deb'] = [
     'librbd1',
 #    'librbd1-dbg',
     'rbd-fuse',
+    'qemu',
 ]
 PACKAGES['ceph']['rpm'] = [
 #    'ceph-debuginfo',
